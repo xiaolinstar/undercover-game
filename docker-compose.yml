@@ -1,0 +1,17 @@
+# 与 xiaolin-docs 共享网络和软负载
+networks:
+  tiny-sparrow-network:
+    external: true
+
+services:
+  undercover-game:
+    image: ghcr.io/xiaolinstar/undercover-game:main
+    container_name: undercover-game
+    restart: unless-stopped
+    volumes:
+      - ./volumes/nginx/logs:/var/log/nginx
+    networks:
+      - tiny-sparrow-network
+    environment:
+      # 设置中国时区
+      TZ: Asia/Shanghai

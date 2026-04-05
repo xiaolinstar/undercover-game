@@ -1,0 +1,130 @@
+@import './base.css';
+
+#app {
+  min-height: 100dvh;
+  padding: 16px;
+  font-weight: normal;
+  background:
+    radial-gradient(900px 420px at 50% -10%, color-mix(in oklab, #2f7cf6 18%, transparent), transparent 70%),
+    radial-gradient(700px 360px at 90% 0%, color-mix(in oklab, #12b981 16%, transparent), transparent 65%);
+}
+
+.page {
+  min-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.muted {
+  color: var(--color-text);
+  opacity: 0.78;
+  font-size: 13px;
+}
+
+.card {
+  background: color-mix(in oklab, var(--color-background-soft) 92%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.4) inset;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input,
+.select {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+.btn {
+  width: 100%;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 16px;
+  font-weight: 650;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.btn.primary {
+  background: #2f7cf6;
+  border-color: #2f7cf6;
+  color: white;
+  box-shadow: 0 12px 26px rgba(47, 124, 246, 0.28);
+}
+
+.btn.danger {
+  background: #e5484d;
+  border-color: #e5484d;
+  color: white;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+}
+
+.btn.inline {
+  width: auto;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in oklab, var(--color-background-mute) 92%, transparent);
+  font-size: 12px;
+  opacity: 0.92;
+}
+
+.center {
+  text-align: center;
+}
+
+.big-number {
+  font-size: 68px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1;
+  user-select: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+  }
+}
