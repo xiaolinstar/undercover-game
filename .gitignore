@@ -49,3 +49,5 @@ volumes/*
 .env
 .env.*
 !.env.example
+
+conf/cert/
