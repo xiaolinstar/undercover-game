@@ -117,12 +117,15 @@ onBeforeUnmount(() => onPressUp())
     </div>
 
     <button
-      class="btn primary"
+      class="btn primary holdBtn"
       type="button"
       @pointerdown.prevent="onPressDown"
       @pointerup.prevent="onPressUp"
       @pointercancel.prevent="onPressUp"
       @pointerleave.prevent="onPressUp"
+      @touchstart.prevent="onPressDown"
+      @touchend.prevent="onPressUp"
+      @touchcancel.prevent="onPressUp"
       @contextmenu.prevent
     >
       按住揭晓（松开隐藏）
@@ -141,6 +144,14 @@ onBeforeUnmount(() => onPressUp())
 </template>
 
 <style scoped>
+.holdBtn {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
 .flipStage {
   perspective: 1200px;
 }

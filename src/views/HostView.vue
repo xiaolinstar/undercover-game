@@ -40,7 +40,6 @@ function confirmNewGame() {
 }
 
 const activePos = ref<number | null>(null)
-const mode = ref<'verify' | 'forget'>('verify')
 
 const activeCard = computed(() => {
   if (!session.value || !activePos.value) return null
@@ -55,7 +54,6 @@ const activeAccent = computed(() => {
 
 function openSheet(pos: number) {
   activePos.value = pos
-  mode.value = 'verify'
   onPressUp()
 }
 
@@ -180,17 +178,15 @@ function endQuickVerify(e?: PointerEvent) {
 
 function closeSheet() {
   activePos.value = null
-  mode.value = 'verify'
   onPressUp()
 }
 
 watch(activePos, () => onPressUp())
-watch(mode, () => onPressUp())
 watch(activePos, (v) => {
   if (v) cancelQuickVerify()
 })
 
-const holdMs = computed(() => (mode.value === 'verify' ? 500 : 600))
+const holdMs = 600
 const isVisible = ref(false)
 const isHolding = ref(false)
 let holdTimer: number | null = null
@@ -203,12 +199,13 @@ function clearHoldTimer() {
 }
 
 function onPressDown() {
+  if (!activePos.value) return
   isHolding.value = true
   isVisible.value = false
   clearHoldTimer()
   holdTimer = window.setTimeout(() => {
     if (isHolding.value) isVisible.value = true
-  }, holdMs.value)
+  }, holdMs)
 }
 
 function onPressUp() {
@@ -221,23 +218,10 @@ function roleText(role: Role) {
   return role === 'undercover' ? '卧底' : '平民'
 }
 
-watch(isVisible, (v) => {
-  if (!v) return
-  if (mode.value !== 'verify') return
-  if (!activeCard.value) return
-  // v1: no undo; once revealed, persist the verdict onto the grid.
-  game.setVerdict(activeCard.value.pos, activeCard.value.role)
-})
-
 function verdictFor(pos: number) {
   const role = session.value?.verdicts[String(pos)]
   return role ? roleText(role) : null
 }
-
-const activeVerdict = computed(() => {
-  if (!session.value || !activePos.value) return null
-  return session.value.verdicts[String(activePos.value)] ?? null
-})
 
 function onTileClick(pos: number) {
   if (Date.now() < suppressClickUntil) return
@@ -344,73 +328,52 @@ onBeforeUnmount(() => onPressUp())
       </div>
     </details>
 
-    <div v-if="activePos && activeCard" class="sheetRoot" @keydown.esc="closeSheet">
-      <div class="backdrop" @click="closeSheet" />
-      <div class="sheet" role="dialog" aria-modal="true">
-        <div class="sheetHeader">
-          <div style="font-weight: 800">第 {{ activePos }} 位</div>
-          <button class="xBtn" type="button" @click="closeSheet">关闭</button>
-        </div>
+	    <div v-if="activePos && activeCard" class="sheetRoot" @keydown.esc="closeSheet">
+	      <div class="backdrop" @click="closeSheet" />
+	      <div class="sheet" role="dialog" aria-modal="true">
+	        <div class="sheetHeader">
+	          <div style="font-weight: 800">忘词回看：第 {{ activePos }} 位</div>
+	          <button class="xBtn" type="button" @click="closeSheet">关闭</button>
+	        </div>
+	
+	        <div class="muted" style="margin-top: 6px">把手机交给本人：长按揭晓词语，松开隐藏。不会显示身份。</div>
 
-        <div class="sheetTabs">
-          <button class="tab" :class="{ active: mode === 'verify' }" type="button" @click="mode = 'verify'">
-            身份查验
-          </button>
-          <button class="tab" :class="{ active: mode === 'forget' }" type="button" @click="mode = 'forget'">
-            忘词回看
-          </button>
-        </div>
+	        <div class="flipStage" :style="{ '--accent': activeAccent }">
+	          <div class="flipCard" :class="{ revealed: isVisible }">
+	            <div class="face front card stack center">
+	              <div class="muted">轮到你了</div>
+	              <div class="big-number" style="margin: 6px 0 2px">{{ activePos }}</div>
+	              <div class="pill">按住下方按钮揭晓</div>
+	            </div>
+	            <div class="face back card stack center">
+	              <div class="muted">你的词</div>
+	              <div class="word">
+	                {{ activeCard.word }}
+	              </div>
+	              <div class="pill">松开立即隐藏</div>
+	            </div>
+	          </div>
+	        </div>
 
-        <div v-if="mode === 'verify'" class="muted" style="margin-top: 6px">
-          <template v-if="activeVerdict">
-            已查验：{{ roleText(activeVerdict) }}（一期不支持撤销/改位）。
-          </template>
-          <template v-else>长按揭晓身份（只显示平民/卧底，不显示词）。揭晓后会自动在格子上标记结果。</template>
-        </div>
-        <div v-else class="muted" style="margin-top: 6px">
-          把手机交给本人：长按揭晓词语，松开隐藏。不会显示身份。
-        </div>
-
-        <div class="flipStage" :style="{ '--accent': activeAccent }">
-          <div class="flipCard" :class="{ revealed: isVisible }">
-            <div class="face front card stack center">
-              <div class="muted">{{ mode === 'verify' ? '查验对象' : '轮到你了' }}</div>
-              <div class="big-number" style="margin: 6px 0 2px">{{ activePos }}</div>
-              <div class="pill">按住下方按钮揭晓</div>
-            </div>
-            <div class="face back card stack center">
-              <div class="muted">{{ mode === 'verify' ? '结果' : '你的词' }}</div>
-              <div class="word">
-                <template v-if="mode === 'verify'">{{ roleText(activeCard.role) }}</template>
-                <template v-else>{{ activeCard.word }}</template>
-              </div>
-              <div class="pill">{{ mode === 'verify' ? '不显示词语' : '松开立即隐藏' }}</div>
-            </div>
-          </div>
-        </div>
-
-        <button
-          class="btn primary"
-          type="button"
-          :disabled="mode === 'verify' && !!activeVerdict"
-          @pointerdown.prevent="mode === 'verify' && activeVerdict ? undefined : onPressDown"
-          @pointerup.prevent="onPressUp"
-          @pointercancel.prevent="onPressUp"
-          @pointerleave.prevent="onPressUp"
-          @contextmenu.prevent
-        >
-          {{
-            mode === 'verify'
-              ? activeVerdict
-                ? '已查验（无需重复）'
-                : '按住查验（松开隐藏）'
-              : '按住揭晓（松开隐藏）'
-          }}
-        </button>
-      </div>
-    </div>
-  </div>
-</template>
+	        <button
+	          class="btn primary holdBtn"
+	          type="button"
+	          :disabled="false"
+	          @pointerdown.prevent="onPressDown"
+	          @pointerup.prevent="onPressUp"
+	          @pointercancel.prevent="onPressUp"
+	          @pointerleave.prevent="onPressUp"
+	          @touchstart.prevent="onPressDown"
+	          @touchend.prevent="onPressUp"
+	          @touchcancel.prevent="onPressUp"
+	          @contextmenu.prevent
+	        >
+	          按住揭晓（松开隐藏）
+	        </button>
+	      </div>
+	    </div>
+	  </div>
+	</template>
 
 <style scoped>
 .grid {
@@ -422,6 +385,11 @@ onBeforeUnmount(() => onPressUp())
 .posBtn {
   position: relative;
   overflow: hidden;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -544,6 +512,7 @@ onBeforeUnmount(() => onPressUp())
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
+  z-index: 0;
 }
 
 .sheet {
@@ -551,6 +520,7 @@ onBeforeUnmount(() => onPressUp())
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 1;
   padding: 14px;
   border-top-left-radius: 18px;
   border-top-right-radius: 18px;
@@ -574,26 +544,11 @@ onBeforeUnmount(() => onPressUp())
   border-radius: 12px;
   padding: 6px 10px;
   font-size: 13px;
-}
-
-.sheetTabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.tab {
-  border: 1px solid var(--color-border);
-  background: var(--color-background);
-  color: var(--color-text);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-weight: 650;
-}
-
-.tab.active {
-  border-color: color-mix(in oklab, #2f7cf6 35%, var(--color-border));
-  background: color-mix(in oklab, #2f7cf6 10%, var(--color-background));
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .flipStage {
@@ -639,5 +594,13 @@ onBeforeUnmount(() => onPressUp())
   letter-spacing: 1px;
   padding: 10px 0;
   user-select: none;
+}
+
+.holdBtn {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
 }
 </style>
