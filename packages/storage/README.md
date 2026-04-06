@@ -5,4 +5,3 @@
 - Web：localStorage
 - 微信小程序：`uni.setStorageSync/getStorageSync`
 - iOS/Android/鸿蒙：各自 KV 存储
-
