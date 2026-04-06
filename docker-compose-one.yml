@@ -4,6 +4,19 @@ networks:
     external: false
 
 services:
+  # 软负载
+  nginx-gateway:
+    image: nginx:alpine3.20-perl
+    container_name: nginx-gateway
+    ports:
+      - '443:443'
+    networks:
+      - party-game-network
+    volumes:
+      # 设置目录挂载
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./conf/cert:/etc/nginx/cert
+
   undercover-game:
     image: ghcr.io/xiaolinstar/undercover-game:main
     container_name: undercover-game
@@ -15,5 +28,3 @@ services:
     environment:
       # 设置中国时区
       TZ: Asia/Shanghai
-    ports:
-      - '8080:8080'
