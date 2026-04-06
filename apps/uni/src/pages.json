@@ -1,0 +1,29 @@
+{
+  "pages": [
+    {
+      "path": "pages/setup/index",
+      "style": {
+        "navigationBarTitleText": "开局设置"
+      }
+    },
+    {
+      "path": "pages/words/index",
+      "style": {
+        "navigationBarTitleText": "选择词对"
+      }
+    },
+    {
+      "path": "pages/reveal/index",
+      "style": {
+        "navigationBarTitleText": "玩家查看"
+      }
+    },
+    {
+      "path": "pages/host/index",
+      "style": {
+        "navigationBarTitleText": "房主模式"
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,34 @@
+{
+  "name": "undercover-game-uni",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:h5": "cross-env UNI_PLATFORM=h5 vite",
+    "build:h5": "cross-env UNI_PLATFORM=h5 vite build",
+    "dev:mp-weixin": "cross-env UNI_PLATFORM=mp-weixin vite",
+    "build:mp-weixin": "cross-env UNI_PLATFORM=mp-weixin vite build",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@undercover/core": "workspace:*",
+    "@undercover/storage": "workspace:*",
+    "pinia": "2.1.7",
+    "vue": "3.4.21"
+  },
+  "devDependencies": {
+    "@dcloudio/uni-app": "vue3",
+    "@dcloudio/uni-components": "vue3",
+    "@dcloudio/uni-h5": "vue3",
+    "@dcloudio/uni-mp-weixin": "vue3",
+    "@dcloudio/vite-plugin-uni": "vue3",
+    "@dcloudio/types": "3.4.28",
+    "@types/node": "^24.12.0",
+    "cross-env": "^7.0.3",
+    "typescript": "~6.0.0",
+    "vite": "5.2.8",
+    "vue-tsc": "^3.2.6"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

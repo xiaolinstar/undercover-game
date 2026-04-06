@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { shuffleInPlace } from '@/lib/random'
 import { readJson, removeKey, writeJson } from '@/lib/storage'
 import { useWordPairsStore } from '@/stores/wordPairs'
+import { autoUndercoverCount, createSession } from '@undercover/core'
 import type { GameConfig, GameSession, Role, WordPair } from '@/types/game'
 
 const STORAGE_KEY = 'undercover.game.v1'
@@ -9,19 +9,6 @@ const STORAGE_KEY = 'undercover.game.v1'
 type GameState = {
   config: GameConfig
   session: GameSession | null
-}
-
-export function autoUndercoverCount(numPlayers: number) {
-  // A pragmatic default for party games:
-  // - 4~6: 1
-  // - >=7: ~25% (rounded), capped to numPlayers-1
-  if (numPlayers <= 6) return 1
-  const byRatio = Math.round(numPlayers / 4)
-  return Math.max(1, Math.min(numPlayers - 1, byRatio))
-}
-
-function makeSessionId() {
-  return `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 function pickWordPair(wordPairs: ReturnType<typeof useWordPairsStore>, config: GameConfig): WordPair | null {
@@ -79,29 +66,7 @@ export const useGameStore = defineStore('game', {
       const wordPairs = useWordPairsStore()
       const picked = pickWordPair(wordPairs, this.config)
       if (!picked) return null
-
-      const numPlayers = this.config.numPlayers
-      const undercoverCount = autoUndercoverCount(numPlayers)
-
-      const roles: Role[] = []
-      for (let i = 0; i < undercoverCount; i++) roles.push('undercover')
-      for (let i = undercoverCount; i < numPlayers; i++) roles.push('civilian')
-      shuffleInPlace(roles)
-
-      const cards = roles.map((role, idx) => ({
-        pos: idx + 1,
-        role,
-        word: role === 'undercover' ? picked.undercover : picked.civilian,
-      }))
-
-      const session: GameSession = {
-        id: makeSessionId(),
-        createdAt: Date.now(),
-        config: { ...this.config, undercoverCount },
-        wordPair: { id: picked.id, civilian: picked.civilian, undercover: picked.undercover, label: picked.label },
-        cards,
-        verdicts: {},
-      }
+      const session: GameSession = createSession(this.config, picked)
 
       this.session = session
       this.persist()

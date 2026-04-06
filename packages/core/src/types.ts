@@ -27,3 +27,6 @@ export type GameSession = {
   cards: PlayerCard[]
   verdicts: Record<string, Role>
 }
+
+export type GameOutcome = { status: 'ongoing' } | { status: 'ended'; winner: Role }
+

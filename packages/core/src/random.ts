@@ -1,7 +1,7 @@
 export function randomInt(maxExclusive: number): number {
   if (maxExclusive <= 0) return 0
 
-  // Prefer cryptographically-strong randomness when available
+  // Prefer cryptographically-strong randomness when available (Web).
   const getRandomValues = globalThis.crypto?.getRandomValues?.bind(globalThis.crypto)
   if (getRandomValues) {
     const buf = new Uint32Array(1)
@@ -21,3 +21,4 @@ export function shuffleInPlace<T>(arr: T[]): T[] {
   }
   return arr
 }
+

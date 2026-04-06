@@ -1,4 +1,4 @@
-import type { WordPair } from '@/types/game'
+import type { WordPair } from './types'
 
 export const builtinWordPairs: WordPair[] = [
   { id: 'b-01', civilian: '火锅', undercover: '麻辣烫', label: '吃的' },
@@ -70,3 +70,4 @@ export const builtinWordPairs: WordPair[] = [
   { id: 'b-59', civilian: '高铁', undercover: '飞机', label: '出行' },
   { id: 'b-60', civilian: '雨伞', undercover: '雨衣', label: '生活' },
 ].map((p) => ({ ...p, source: 'builtin' as const }))
+

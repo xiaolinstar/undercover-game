@@ -35,12 +35,12 @@ pnpm preview
 
 ## 代码结构
 
-- `src/views/SetupView.vue`：开局配置
-- `src/views/WordPairPickerView.vue`：词对选择/自定义管理
-- `src/views/RevealView.vue`：玩家查看（翻牌 + 长按）
-- `src/views/HostView.vue`：房主模式（快捷查验、忘词回看、胜负提示）
-- `src/stores/game.ts`：发牌逻辑、查验记录（verdicts）与本地持久化
-- `src/stores/wordPairs.ts` / `src/data/wordPairs.ts`：词库（内置 + 自定义）
+- `apps/web/src/views/SetupView.vue`：开局配置
+- `apps/web/src/views/WordPairPickerView.vue`：词对选择/自定义管理
+- `apps/web/src/views/RevealView.vue`：玩家查看（翻牌 + 长按）
+- `apps/web/src/views/HostView.vue`：房主模式（快捷查验、忘词回看、胜负提示）
+- `apps/web/src/stores/game.ts`：发牌逻辑、查验记录（verdicts）与本地持久化
+- `apps/web/src/stores/wordPairs.ts` / `apps/web/src/data/wordPairs.ts`：词库（内置 + 自定义）
 
 ## 开发与质量保障（依赖/脚本）
 

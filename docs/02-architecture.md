@@ -18,7 +18,7 @@
 
 ### `useWordPairsStore`
 
-- 内置词库：`src/data/wordPairs.ts`
+- 内置词库：`apps/web/src/data/wordPairs.ts`
 - 自定义词库：localStorage 持久化
 - 支持：随机抽取 / 新增 / 删除 / 根据 id 获取
 
@@ -34,4 +34,3 @@
 - 全流程不依赖后端，避免把发牌信息上传到服务器
 - 玩家查看与忘词回看均为“长按揭晓、松开隐藏”，降低旁观偷看风险
 - 房主查验只显示“卧底/平民”，不显示词
-

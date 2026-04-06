@@ -1,0 +1,14 @@
+{
+  "name": "谁是卧底发牌器",
+  "appid": "xx",
+  "description": "线下聚会快速发牌与房主查验",
+  "versionName": "0.1.0",
+  "versionCode": 100,
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "xx",
+    "setting": {
+      "urlCheck": false
+    }
+  }
+}
