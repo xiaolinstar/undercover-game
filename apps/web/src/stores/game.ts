@@ -19,12 +19,18 @@ function pickWordPair(wordPairs: ReturnType<typeof useWordPairsStore>, config: G
 export const useGameStore = defineStore('game', {
   state: (): GameState => {
     const stored = readJson<GameState>(STORAGE_KEY)
+    const storedSession = stored?.session
     return {
       config: stored?.config ?? { numPlayers: 6, wordPairId: 'random' },
-      session: stored?.session
+      session: storedSession
         ? {
-            ...stored.session,
-            verdicts: (stored.session as any).verdicts ?? {},
+            ...storedSession,
+            verdicts: (storedSession as any).verdicts ?? {},
+            wordPair: {
+              ...storedSession.wordPair,
+              difficulty: storedSession.wordPair?.difficulty ?? 'medium',
+              tags: storedSession.wordPair?.tags ?? [],
+            },
           }
         : null,
     }
@@ -69,6 +75,7 @@ export const useGameStore = defineStore('game', {
       const session: GameSession = createSession(this.config, picked)
 
       this.session = session
+      wordPairs.markPairUsed(picked.id)
       this.persist()
       return session
     },

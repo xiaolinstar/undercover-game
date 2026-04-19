@@ -11,6 +11,11 @@ const wordPairs = useWordPairsStore()
 const q = ref('')
 
 const currentId = computed(() => game.config.wordPairId)
+const difficultyText: Record<string, string> = {
+  easy: '简单',
+  medium: '中等',
+  hard: '困难',
+}
 
 const filteredPairs = computed(() => {
   const query = q.value.trim()
@@ -70,7 +75,7 @@ function removeCustomPair(id: string) {
     <div class="card stack">
       <button class="pickBtn" type="button" :class="{ active: currentId === 'random' }" @click="select('random')">
         <div style="font-weight: 800">随机抽取（推荐）</div>
-        <div class="muted">从内置 + 自定义词对中随机抽一个</div>
+        <div class="muted">优先中等难度词对，并尽量避开最近几局已出现的词</div>
       </button>
 
       <div class="divider" />
@@ -83,10 +88,15 @@ function removeCustomPair(id: string) {
         :class="{ active: currentId === p.id }"
         @click="select(p.id)"
       >
-        <div style="font-weight: 800">
-          {{ p.label ? `【${p.label}】` : '' }}{{ p.civilian }} / {{ p.undercover }}
+        <div class="titleRow">
+          <div style="font-weight: 800">
+            {{ p.label ? `【${p.label}】` : '' }}{{ p.civilian }} / {{ p.undercover }}
+          </div>
+          <span class="difficultyBadge">{{ difficultyText[p.difficulty] ?? '中等' }}</span>
         </div>
-        <div class="muted" v-if="p.source === 'custom'">我的自定义</div>
+        <div class="muted" v-if="p.source === 'custom' || p.status !== 'active'">
+          <span v-if="p.source === 'custom'">我的自定义</span><span v-if="p.source === 'custom' && p.status !== 'active'"> · </span><span v-if="p.status !== 'active'">已停用</span>
+        </div>
       </button>
     </div>
 
@@ -142,5 +152,23 @@ function removeCustomPair(id: string) {
   height: 1px;
   background: var(--color-border);
   margin: 6px 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.difficultyBadge {
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 1;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: color-mix(in oklab, var(--color-text) 48%, transparent);
+  background: color-mix(in oklab, var(--color-background-mute) 72%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
 }
 </style>

@@ -1,5 +1,20 @@
+<script lang="ts">
+import { createDefaultSharePayload, createDefaultTimelineSharePayload } from '@/lib/share'
+
+export default {
+  onShareAppMessage() {
+    return createDefaultSharePayload()
+  },
+  onShareTimeline() {
+    return createDefaultTimelineSharePayload()
+  },
+}
+</script>
+
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { showDefaultShareMenu } from '@/lib/share'
 import { useGameStore } from '@/stores/game'
 import { useWordPairsStore } from '@/stores/wordPairs'
 
@@ -8,6 +23,11 @@ const wordPairs = useWordPairsStore()
 
 const q = ref('')
 const currentId = computed(() => game.config.wordPairId)
+const difficultyText: Record<string, string> = {
+  easy: '简单',
+  medium: '中等',
+  hard: '困难',
+}
 
 const filteredPairs = computed(() => {
   const query = q.value.trim()
@@ -27,6 +47,10 @@ const filteredPairs = computed(() => {
 const civilianInput = ref('')
 const undercoverInput = ref('')
 const labelInput = ref('')
+
+onLoad(() => {
+  showDefaultShareMenu()
+})
 
 function select(id: string) {
   game.setWordPairId(id)
@@ -61,7 +85,7 @@ function removeCustomPair(id: string) {
       <view class="item" :class="{ active: currentId === 'random' }" @click="select('random')">
         <view class="left">
           <text class="name">随机抽取（推荐）</text>
-          <text class="desc">每局从内置 + 自定义里随机抽一个</text>
+          <text class="desc">优先中等难度词对，并尽量避开最近几局已出现的词</text>
         </view>
         <text class="mark" v-if="currentId === 'random'">已选</text>
       </view>
@@ -70,8 +94,13 @@ function removeCustomPair(id: string) {
 
       <view v-for="p in filteredPairs" :key="p.id" class="item" :class="{ active: currentId === p.id }" @click="select(p.id)">
         <view class="left">
-          <text class="name">{{ p.label ? `【${p.label}】` : '' }}{{ p.civilian }} / {{ p.undercover }}</text>
-          <text class="desc" v-if="p.source === 'custom'">我的自定义</text>
+          <view class="nameRow">
+            <text class="name">{{ p.label ? `【${p.label}】` : '' }}{{ p.civilian }} / {{ p.undercover }}</text>
+            <text class="difficultyBadge">{{ difficultyText[p.difficulty] || '中等' }}</text>
+          </view>
+          <text class="desc" v-if="p.source === 'custom' || p.status !== 'active'">
+            <text v-if="p.source === 'custom'">我的自定义</text><text v-if="p.source === 'custom' && p.status !== 'active'"> · </text><text v-if="p.status !== 'active'">已停用</text>
+          </text>
         </view>
         <text class="mark" v-if="currentId === p.id">已选</text>
       </view>
@@ -131,11 +160,31 @@ function removeCustomPair(id: string) {
   display: flex;
   flex-direction: column;
   gap: 6rpx;
+  flex: 1;
+  min-width: 0;
+}
+.nameRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
 }
 .name {
   font-size: 28rpx;
   font-weight: 700;
   color: #111;
+  flex: 1;
+  min-width: 0;
+}
+.difficultyBadge {
+  flex-shrink: 0;
+  font-size: 20rpx;
+  line-height: 1;
+  padding: 8rpx 12rpx;
+  border-radius: 999rpx;
+  color: rgba(17, 17, 17, 0.52);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 .desc {
   font-size: 24rpx;
@@ -184,4 +233,3 @@ function removeCustomPair(id: string) {
   line-height: 1;
 }
 </style>
-

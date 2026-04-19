@@ -1,1 +1,12 @@
-export type { GameConfig, GameOutcome, GameSession, PlayerCard, Role, WordPair } from '@undercover/core'
+export type {
+  GameConfig,
+  GameOutcome,
+  GameSession,
+  PlayerCard,
+  Role,
+  WordPair,
+  WordPairDifficulty,
+  WordPairFeedback,
+  WordPairRepository,
+  WordPairStatus,
+} from '@undercover/core'

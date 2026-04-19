@@ -1,5 +1,20 @@
+<script lang="ts">
+import { createDefaultSharePayload, createDefaultTimelineSharePayload } from '@/lib/share'
+
+export default {
+  onShareAppMessage() {
+    return createDefaultSharePayload()
+  },
+  onShareTimeline() {
+    return createDefaultTimelineSharePayload()
+  },
+}
+</script>
+
 <script setup lang="ts">
 import { computed } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { showDefaultShareMenu } from '@/lib/share'
 import { useGameStore } from '@/stores/game'
 import { useWordPairsStore } from '@/stores/wordPairs'
 
@@ -50,6 +65,10 @@ function start() {
     uni.showToast({ title: '启动失败，请重试', icon: 'none' })
   }
 }
+
+onLoad(() => {
+  showDefaultShareMenu()
+})
 </script>
 
 <template>
@@ -228,6 +247,41 @@ function start() {
   margin-top: 14rpx;
   font-size: 22rpx;
   color: #999;
+}
+.previewSection {
+  margin-top: 20rpx;
+}
+.previewTitle {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 12rpx;
+}
+.previewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+.previewItem {
+  background: #f7f8fa;
+  border-radius: 18rpx;
+  padding: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.previewItem.active {
+  background: rgba(7, 193, 96, 0.12);
+}
+.previewName {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #111;
+}
+.previewMeta {
+  font-size: 22rpx;
+  color: #666;
 }
 .footer {
   margin-top: auto;

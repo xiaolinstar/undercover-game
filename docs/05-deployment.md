@@ -1,90 +1,113 @@
-# 部署设计（云服务器）
+# 发布与部署说明
 
-你提到服务器已有：
+本文记录项目当前真实可用的发布方式，以及未来如果接入服务端后的部署预留。
 
-- 现有项目：`xiaolin-docs`
-- 已使用：docker-compose / nginx / GitHub Actions
-- 80 端口已被占用，且已配置 HTTPS
+当前项目还没有服务端，因此不采用“云服务器 + docker-compose + nginx + GitHub Actions”作为主发布策略。此前那套方案对当前阶段并不适用，应视为未来预留，而不是现在的正式发布方式。
 
-并且我已用 `gh` 查看到 `xiaolin-docs` 的部署风格是：
+## 当前状态
 
-- CI：构建 Docker 镜像并推送到 **GHCR**（`ci-ghcr.yml`）
-- CD：通过 **appleboy/ssh-action** 到服务器执行 `git pull` + `docker compose pull/down/up`（`cd-ghcr.yml`）
+### H5
 
-本项目按同样风格给出一套可复用的模板（见 `deploy/` 与 `.github/workflows/`）。
+- H5 是静态前端项目
+- 当前可以本地构建后部署到任意静态托管环境
+- 如果暂时没有正式站点，也可以只保留本地构建产物用于测试
 
-## 方案 1：静态文件部署（最简单）
+### 微信小程序
 
-### 服务器准备
+- 当前没有服务端依赖
+- 当前发布方式是：
+  - 本地构建微信小程序包
+  - 使用微信开发者工具打开产物目录
+  - 通过微信公众平台 / 微信开发者工具上传代码
+- 这也是当前阶段最符合实际的发布路径
 
-1. 在服务器创建目录（示例）：
-   - `/srv/undercover-game/current`（放 `dist/` 内容）
-2. Nginx 增加一个 HTTPS 站点（示例）：
-   - 使用新域名（推荐）：`undercover.example.com`
-   - 或使用现有域名的子路径（可选）：`example.com/undercover/`
+## 当前推荐发布方式
 
-> 由于 80 端口已被占用，建议走 443 的 server block，并复用现有证书/或新增证书。
+### 1. H5 发布
 
-### GitHub Actions（部署思路）
+H5 当前属于纯静态站点，推荐流程：
 
-- 触发：push 到 `main`
-- 步骤：`pnpm install` → `pnpm build` → `rsync dist/` 到服务器目录 → `nginx -s reload`
-- 需要的 Secrets：
-  - `SSH_HOST` / `SSH_USER` / `SSH_KEY`（私钥）/ `SSH_PORT`（如有）/ `DEPLOY_PATH`
+1. 本地执行构建
+2. 得到 `dist` 产物
+3. 将产物部署到静态托管环境
 
-优点：最少组件；缺点：需要维护 nginx 静态目录与同步策略。
+可选托管方式：
 
-## 方案 2：Docker 部署（推荐，和现有 compose 更一致）
+- Nginx 静态站点
+- GitHub Pages
+- Vercel / Netlify / Cloudflare Pages
+- 任意对象存储静态托管
 
-### 运行方式
+### 2. 微信小程序发布
 
-1. GitHub Actions 构建 Docker 镜像并推送到 GHCR（或你的镜像仓库）
-2. 服务器通过 `docker compose pull && docker compose up -d` 更新
-3. Nginx 通过 443 反代到容器端口（容器对外不占用 80）
+微信小程序当前推荐流程：
 
-### Docker 镜像推荐做法
+1. 执行构建命令
+   - `pnpm build:uni:mp-weixin`
+2. 在微信开发者工具中打开目录
+   - `apps/uni/dist/mp-weixin`
+3. 本地预览与真机调试
+4. 上传代码到微信公众平台
+5. 在微信公众平台提交审核 / 发布
 
-镜像内包含 `dist/`，用 nginx-alpine 或 caddy 静态服务：
+## 为什么当前不写服务端部署方案
 
-- build stage：`pnpm build`
-- runtime stage：nginx 提供静态文件
+因为当前项目：
 
-### docker-compose（示意）
+- 没有后端服务
+- 没有数据库
+- 没有接口网关
+- 没有需要常驻运行的服务进程
 
-```yaml
-services:
-  undercover-game:
-    image: ghcr.io/<owner>/<repo>:main
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:18082:80"
-```
+所以此时写完整的服务器部署设计，会出现两个问题：
 
-然后在 Nginx 里把子域名反代到 `127.0.0.1:18082`（通过 443）。
+- 对当前阶段无效
+- 容易让文档和真实发布方式脱节
 
-优点：版本化、回滚容易、和现有 compose/ci 一致；缺点：需要维护镜像发布与拉取权限。
+当前更合适的做法是：
 
-## Nginx 设计建议（避免占用 80）
+- H5 按静态资源部署理解
+- 小程序按微信公众平台发布理解
 
-- 使用 **独立子域名**（推荐）：`undercover.example.com`
-  - 好处：不需要处理 Vite 路由在子路径下的 base 问题
-- 如果一定要用子路径（例如 `/undercover/`），需要：
-  - Vite 配置 `base`
-  - Nginx 做 `try_files` 处理 SPA 路由
+## 未来预留
 
-## 落地步骤（按 xiaolin-docs 的习惯）
+如果后续进入二期或三期，出现以下需求，再补充服务端部署设计更合适：
 
-1. 在服务器创建目录：`~/WebstormProjects/undercover-game`
-2. 在服务器 `git clone` 本仓库到该目录
-3. 修改 `docker-compose.yml`：
-   - 把 `ghcr.io/<OWNER>/<REPO>:main` 改成你的实际镜像地址（`<OWNER>/<REPO>` 就是本仓库的 `github.repository`）
-4. Nginx 增加子域名站点，反代到 `127.0.0.1:18082`（示例见 `deploy/nginx/site-undercover-game.conf`）
-5. GitHub 仓库 Secrets 增加（与 `xiaolin-docs` 一致）：
-   - `SERVER_HOST`
-   - `SERVER_USER`
-   - `SERVER_PASSWORD`
-6. 推送到 `main`，触发：
-   - `.github/workflows/ci-ghcr.yml` 构建并推送镜像到 GHCR
-   - `.github/workflows/cd-ghcr.yml` 登录服务器执行 `git pull` + `docker compose pull/down/up`
+- 用户账号体系
+- 云端词库同步
+- 对战记录 / 战绩
+- 房间联机
+- AI 词库服务
+- 运营配置后台
 
-> 提示：若你更倾向用 SSH key 而非密码，我可以把 Actions 改成 key-based（更安全）。
+到那时再引入以下内容会更合理：
+
+- 云服务器
+- Docker / docker-compose
+- Nginx 反代
+- GitHub Actions 自动部署
+- 数据库与对象存储
+
+## 当前发布检查清单
+
+### H5
+
+- 本地构建通过
+- 页面静态资源可正常访问
+- 路由刷新策略与部署平台匹配
+
+### 微信小程序
+
+- 小程序构建通过
+- 微信开发者工具能正常打开 `apps/uni/dist/mp-weixin`
+- 真机预览通过
+- 上传到微信公众平台成功
+
+## 结论
+
+当前阶段应把“发布”和“部署”分开理解：
+
+- 微信小程序：本地构建后上传到微信公众平台
+- H5：构建后部署到静态托管环境
+
+服务端部署方案暂不作为当前文档重点，等项目真正引入后端后再补充。

@@ -2,11 +2,18 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
-import type { Role } from '@/types/game'
+import { useWordPairsStore } from '@/stores/wordPairs'
+import type { Role, WordPairFeedback } from '@/types/game'
 
 const router = useRouter()
 const game = useGameStore()
+const wordPairs = useWordPairsStore()
 const session = computed(() => game.session)
+const currentPair = computed(() => {
+  const pairId = session.value?.wordPair.id
+  return pairId ? wordPairs.getPairById(pairId) : null
+})
+const feedbackText = ref('')
 
 onMounted(() => {
   if (!game.session) router.replace('/setup')
@@ -246,6 +253,18 @@ function winnerText(w: 'civilian' | 'undercover') {
   return w === 'civilian' ? '平民胜利' : '卧底胜利'
 }
 
+function submitFeedback(feedback: WordPairFeedback) {
+  if (!currentPair.value) return
+  const updated = wordPairs.submitPairFeedback(currentPair.value.id, feedback)
+  if (!updated) return
+  const textByFeedback: Record<WordPairFeedback, string> = {
+    too_easy: '已记录：这组词太容易猜。',
+    too_hard_to_describe: '已记录：这组词太难描述。',
+    just_right: '已记录：这组词刚刚好。',
+  }
+  feedbackText.value = textByFeedback[feedback]
+}
+
 onBeforeUnmount(() => onPressUp())
 </script>
 
@@ -275,6 +294,15 @@ onBeforeUnmount(() => onPressUp())
         <div class="pill">{{ session.config.undercoverCount }} 人</div>
       </div>
       <div class="muted">提示：查验身份只显示「平民/卧底」，不会显示词。</div>
+    </div>
+
+    <div v-if="currentPair" class="card stack">
+      <div class="row" style="gap: 8px; align-items: stretch">
+        <button class="btn inline danger" type="button" @click="submitFeedback('too_easy')">太容易猜</button>
+        <button class="btn inline" type="button" style="background: #f59e0b" @click="submitFeedback('too_hard_to_describe')">太难描述</button>
+        <button class="btn inline" type="button" style="background: #12b981" @click="submitFeedback('just_right')">刚刚好</button>
+      </div>
+      <div v-if="feedbackText" class="muted" style="color: #12b981; opacity: 1; font-size: 13px">{{ feedbackText }}</div>
     </div>
 
     <div class="card stack">

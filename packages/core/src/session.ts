@@ -34,7 +34,14 @@ export function createSession(config: GameConfig, picked: WordPair): GameSession
     id: makeSessionId(),
     createdAt: now,
     config: { ...config, undercoverCount },
-    wordPair: { id: picked.id, civilian: picked.civilian, undercover: picked.undercover, label: picked.label },
+    wordPair: {
+      id: picked.id,
+      civilian: picked.civilian,
+      undercover: picked.undercover,
+      label: picked.label,
+      difficulty: picked.difficulty,
+      tags: picked.tags,
+    },
     cards,
     verdicts: {},
   }
@@ -50,4 +57,3 @@ export function computeOutcome(session: GameSession): GameOutcome {
   if (aliveUndercover >= aliveCivilian) return { status: 'ended', winner: 'undercover' }
   return { status: 'ongoing' }
 }
-

@@ -1,10 +1,32 @@
+<script lang="ts">
+import { createDefaultSharePayload, createDefaultTimelineSharePayload } from '@/lib/share'
+
+export default {
+  onShareAppMessage() {
+    return createDefaultSharePayload()
+  },
+  onShareTimeline() {
+    return createDefaultTimelineSharePayload()
+  },
+}
+</script>
+
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { showDefaultShareMenu } from '@/lib/share'
 import { useGameStore } from '@/stores/game'
-import type { Role } from '@/types/game'
+import { useWordPairsStore } from '@/stores/wordPairs'
+import type { Role, WordPairFeedback } from '@/types/game'
 
 const game = useGameStore()
+const wordPairs = useWordPairsStore()
 const session = computed(() => game.session)
+const currentPair = computed(() => {
+  const pairId = session.value?.wordPair.id
+  return pairId ? wordPairs.getPairById(pairId) : null
+})
+const feedbackText = ref('')
 
 const positions = computed(() => {
   if (!session.value) return []
@@ -188,6 +210,23 @@ function newRound() {
   uni.redirectTo({ url: '/pages/reveal/index?pos=1' })
 }
 
+function submitFeedback(feedback: WordPairFeedback) {
+  if (!currentPair.value) return
+  const updated = wordPairs.submitPairFeedback(currentPair.value.id, feedback)
+  if (!updated) return
+  const textByFeedback: Record<WordPairFeedback, string> = {
+    too_easy: '已记录：这组词太容易猜',
+    too_hard_to_describe: '已记录：这组词太难描述',
+    just_right: '已记录：这组词刚刚好',
+  }
+  feedbackText.value = textByFeedback[feedback]
+  uni.showToast({ title: '已记录反馈', icon: 'none' })
+}
+
+onLoad(() => {
+  showDefaultShareMenu()
+})
+
 onBeforeUnmount(() => {
   cancel()
   closeSheet()
@@ -213,6 +252,15 @@ onBeforeUnmount(() => {
         <text class="tag">玩家：{{ session.config.numPlayers }}</text>
         <text class="tag">卧底：{{ session.config.undercoverCount }}</text>
       </view>
+    </view>
+
+    <view class="card" v-if="currentPair">
+      <view class="feedbackHead">
+        <button class="feedbackBtn dangerSoft" @click="submitFeedback('too_easy')">太容易猜</button>
+        <button class="feedbackBtn warnSoft" @click="submitFeedback('too_hard_to_describe')">太难描述</button>
+        <button class="feedbackBtn okSoft" @click="submitFeedback('just_right')">刚刚好</button>
+      </view>
+      <text class="feedbackNote" v-if="feedbackText">{{ feedbackText }}</text>
     </view>
 
     <view class="card">
@@ -328,6 +376,9 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 14rpx;
 }
+.meta.wrap {
+  flex-wrap: wrap;
+}
 .tag {
   padding: 8rpx 16rpx;
   border-radius: 999rpx;
@@ -434,6 +485,38 @@ onBeforeUnmount(() => {
   margin-top: 12rpx;
   font-size: 22rpx;
   color: #999;
+}
+.feedbackRow {
+  margin-top: 16rpx;
+  display: flex;
+  gap: 12rpx;
+}
+.feedbackHead {
+  display: flex;
+  gap: 12rpx;
+}
+.feedbackBtn {
+  flex: 1;
+  border-radius: 18rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #111;
+  background: #f2f3f5;
+}
+.dangerSoft {
+  background: rgba(250, 81, 81, 0.12);
+}
+.warnSoft {
+  background: rgba(255, 159, 10, 0.14);
+}
+.okSoft {
+  background: rgba(7, 193, 96, 0.12);
+}
+.feedbackNote {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #07c160;
 }
 .more {
   margin-top: auto;

@@ -8,5 +8,7 @@
 2. `02-architecture.md`：项目架构与核心数据结构
 3. `03-user-flow.md`：从用户视角的完整流程（玩家/房主）
 4. `04-dev.md`：本地开发、脚本、测试与代码规范
-5. `05-deployment.md`：云服务器部署设计（docker-compose / nginx / GitHub Actions）
-
+5. `05-deployment.md`：当前发布方式与未来部署预留
+6. `06-miniapp.md`：微信小程序的大版本规划（一期 / 二期 / 三期）
+7. `07-ui-style.md`：界面风格与视觉规范
+8. `08-miniapp-iterations.md`：微信小程序的一期内小版本迭代记录与版本发布说明

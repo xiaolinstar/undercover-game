@@ -1,6 +1,20 @@
+<script lang="ts">
+import { createDefaultSharePayload, createDefaultTimelineSharePayload } from '@/lib/share'
+
+export default {
+  onShareAppMessage() {
+    return createDefaultSharePayload()
+  },
+  onShareTimeline() {
+    return createDefaultTimelineSharePayload()
+  },
+}
+</script>
+
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
+import { showDefaultShareMenu } from '@/lib/share'
 import { useGameStore } from '@/stores/game'
 
 const game = useGameStore()
@@ -11,6 +25,7 @@ onLoad((query) => {
   const raw = (query?.pos as string) ?? '1'
   const n = Number.parseInt(raw, 10)
   pos.value = Number.isFinite(n) ? n : 1
+  showDefaultShareMenu()
 })
 
 const card = computed(() => session.value?.cards[pos.value - 1] ?? null)
@@ -223,4 +238,3 @@ onBeforeUnmount(() => onPressUp())
   color: #666;
 }
 </style>
-

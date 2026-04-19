@@ -3,27 +3,34 @@
     {
       "path": "pages/setup/index",
       "style": {
-        "navigationBarTitleText": "开局设置"
+        "navigationBarTitleText": "开局设置",
+        "enableShareAppMessage": true,
+        "enableShareTimeline": true
       }
     },
     {
       "path": "pages/words/index",
       "style": {
-        "navigationBarTitleText": "选择词对"
+        "navigationBarTitleText": "选择词对",
+        "enableShareAppMessage": true,
+        "enableShareTimeline": true
       }
     },
     {
       "path": "pages/reveal/index",
       "style": {
-        "navigationBarTitleText": "玩家查看"
+        "navigationBarTitleText": "玩家查看",
+        "enableShareAppMessage": true,
+        "enableShareTimeline": true
       }
     },
     {
       "path": "pages/host/index",
       "style": {
-        "navigationBarTitleText": "房主模式"
+        "navigationBarTitleText": "房主模式",
+        "enableShareAppMessage": true,
+        "enableShareTimeline": true
       }
     }
   ]
 }
-
