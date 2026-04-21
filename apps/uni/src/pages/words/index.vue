@@ -31,7 +31,7 @@ const difficultyText: Record<string, string> = {
 
 const filteredPairs = computed(() => {
   const query = q.value.trim()
-  const pairs = wordPairs.allPairs
+  const pairs = wordPairs.availablePairs
   if (!query) return pairs
   const lower = query.toLowerCase()
   return pairs.filter((p) => {
@@ -98,9 +98,7 @@ function removeCustomPair(id: string) {
             <text class="name">{{ p.label ? `【${p.label}】` : '' }}{{ p.civilian }} / {{ p.undercover }}</text>
             <text class="difficultyBadge">{{ difficultyText[p.difficulty] || '中等' }}</text>
           </view>
-          <text class="desc" v-if="p.source === 'custom' || p.status !== 'active'">
-            <text v-if="p.source === 'custom'">我的自定义</text><text v-if="p.source === 'custom' && p.status !== 'active'"> · </text><text v-if="p.status !== 'active'">已停用</text>
-          </text>
+          <text class="desc" v-if="p.source === 'custom'">我的自定义</text>
         </view>
         <text class="mark" v-if="currentId === p.id">已选</text>
       </view>

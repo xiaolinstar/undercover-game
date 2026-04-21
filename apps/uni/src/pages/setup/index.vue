@@ -113,7 +113,9 @@ onLoad(() => {
 
 <style scoped>
 .page {
-  padding: 24rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: calc(env(safe-area-inset-top) + 40rpx) 24rpx calc(env(safe-area-inset-bottom) + 24rpx);
   display: flex;
   flex-direction: column;
   gap: 20rpx;
@@ -121,16 +123,19 @@ onLoad(() => {
 .header {
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 10rpx;
+  padding-top: 6rpx;
 }
 .title {
   font-size: 40rpx;
   font-weight: 700;
   color: #111;
+  line-height: 1.18;
 }
 .sub {
   font-size: 26rpx;
   color: #666;
+  line-height: 1.4;
 }
 .card {
   background: #fff;

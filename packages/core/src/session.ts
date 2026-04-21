@@ -40,6 +40,7 @@ export function createSession(config: GameConfig, picked: WordPair): GameSession
       undercover: picked.undercover,
       label: picked.label,
       difficulty: picked.difficulty,
+      difficultyScore: picked.difficultyScore,
       tags: picked.tags,
     },
     cards,

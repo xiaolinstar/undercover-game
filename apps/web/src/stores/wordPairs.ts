@@ -19,6 +19,7 @@ type WordPairsState = {
 }
 
 const HOME_PREVIEW_LIMIT = 6
+const DIFFICULTY_TARGET_SCORE = 50
 
 function normalize(text: string) {
   return text.trim().replace(/\s+/g, ' ')
@@ -53,6 +54,20 @@ function mergeBuiltinMeta(pair: WordPair, meta: Partial<WordPair> | undefined) {
     ...meta,
     source: 'builtin',
   })
+}
+
+function compareWordPairs(a: WordPair, b: WordPair) {
+  const qualityDelta = b.qualityScore - a.qualityScore
+  if (qualityDelta !== 0) return qualityDelta
+
+  const difficultyDistanceDelta =
+    Math.abs(a.difficultyScore - DIFFICULTY_TARGET_SCORE) - Math.abs(b.difficultyScore - DIFFICULTY_TARGET_SCORE)
+  if (difficultyDistanceDelta !== 0) return difficultyDistanceDelta
+
+  const difficultyScoreDelta = a.difficultyScore - b.difficultyScore
+  if (difficultyScoreDelta !== 0) return difficultyScoreDelta
+
+  return a.civilian.localeCompare(b.civilian)
 }
 
 function pickHomePreviewPairs(pairs: WordPair[]) {
@@ -98,7 +113,7 @@ export const useWordPairsStore = defineStore('wordPairs', {
     availablePairs(): WordPair[] {
       return this.allPairs
         .filter((pair) => pair.status === 'active')
-        .sort((a, b) => b.qualityScore - a.qualityScore || a.civilian.localeCompare(b.civilian))
+        .sort(compareWordPairs)
     },
     homePreviewPairs(): WordPair[] {
       return pickHomePreviewPairs(this.availablePairs)
@@ -157,11 +172,13 @@ export const useWordPairsStore = defineStore('wordPairs', {
             lastUsedAt: updated.lastUsedAt,
             useCount: updated.useCount,
             status: updated.status,
+            difficultyScore: updated.difficultyScore,
             qualityScore: updated.qualityScore,
             difficulty: updated.difficulty,
             tags: updated.tags,
             cooldownRounds: updated.cooldownRounds,
             flags: updated.flags,
+            feedbackCounts: updated.feedbackCounts,
           },
         }
       }
@@ -182,9 +199,12 @@ export const useWordPairsStore = defineStore('wordPairs', {
           ...this.builtinMetaById,
           [id]: {
             ...this.builtinMetaById[id],
+            difficultyScore: updated.difficultyScore,
+            difficulty: updated.difficulty,
             status: updated.status,
             qualityScore: updated.qualityScore,
             flags: updated.flags,
+            feedbackCounts: updated.feedbackCounts,
           },
         }
       }

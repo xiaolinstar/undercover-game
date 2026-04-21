@@ -4,8 +4,10 @@ import {
   applyWordPairFeedback,
   builtinWordPairs,
   createSession,
+  DEFAULT_FEEDBACK_TUNING_CONFIG,
   DEFAULT_WORD_PAIR_POLICY,
   pickOperationalWordPair,
+  toDifficultyLevel,
   withWordPairDefaults,
 } from '@undercover/core'
 
@@ -58,20 +60,54 @@ describe('word pair operations', () => {
     expect(picked?.id).toBe('only-recent')
   })
 
-  it('disables a pair after repeated negative feedback drops its quality too low', () => {
+  it('raises difficultyScore for too_easy feedback while keeping quality stable at first', () => {
     const pair = withWordPairDefaults({
       id: 'feedback-target',
       civilian: '地图',
       undercover: '导航',
+      difficultyScore: 31,
       qualityScore: 50,
       flags: [],
     })
 
     const updated = applyWordPairFeedback(pair, 'too_easy')
 
-    expect(updated.qualityScore).toBe(35)
-    expect(updated.status).toBe('disabled')
+    expect(updated.difficultyScore).toBe(34)
+    expect(updated.difficulty).toBe('medium')
+    expect(updated.qualityScore).toBe(50)
+    expect(updated.status).toBe('active')
     expect(updated.flags).toContain('too-easy')
+    expect(updated.feedbackCounts.too_easy).toBe(1)
+  })
+
+  it('applies a small quality penalty after repeated negative feedback reaches the threshold', () => {
+    let pair = withWordPairDefaults({
+      id: 'feedback-target-threshold',
+      civilian: '地图',
+      undercover: '导航',
+      difficultyScore: 70,
+      qualityScore: 50,
+      flags: [],
+    })
+
+    pair = applyWordPairFeedback(pair, 'too_hard_to_describe')
+    pair = applyWordPairFeedback(pair, 'too_hard_to_describe')
+    pair = applyWordPairFeedback(pair, 'too_hard_to_describe')
+
+    expect(pair.difficultyScore).toBe(61)
+    expect(pair.difficulty).toBe('medium')
+    expect(pair.qualityScore).toBe(49)
+    expect(pair.feedbackCounts.too_hard_to_describe).toBe(
+      DEFAULT_FEEDBACK_TUNING_CONFIG.negativeFeedbackThresholdForQualityPenalty,
+    )
+  })
+
+  it('maps difficulty levels from numeric score ranges', () => {
+    expect(toDifficultyLevel(1)).toBe('easy')
+    expect(toDifficultyLevel(33)).toBe('easy')
+    expect(toDifficultyLevel(34)).toBe('medium')
+    expect(toDifficultyLevel(66)).toBe('medium')
+    expect(toDifficultyLevel(67)).toBe('hard')
   })
 })
 
@@ -98,6 +134,7 @@ describe('session creation', () => {
       civilian: pair.civilian,
       undercover: pair.undercover,
       difficulty: pair.difficulty,
+      difficultyScore: pair.difficultyScore,
       tags: pair.tags,
     })
   })
